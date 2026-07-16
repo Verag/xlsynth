@@ -1,152 +1,139 @@
 # xlsynth
 
-> Generate realistic, synthetic and intentionally imperfect Excel workbooks for testing, benchmarking and software validation.
+> Generate realistic and reproducible Excel workbooks for automated testing.
 
 `xlsynth` is an R package for generating synthetic Microsoft Excel workbooks.
 
-Unlike traditional data generators, `xlsynth` focuses on the workbook itself rather than only the data. It can create realistic spreadsheets, simulate exports from business systems, and intentionally introduce common formatting and data quality issues found in real-world Excel files.
+It was originally developed to support testing of **xlversion**, an R package for comparing and fingerprinting Excel workbooks. During development it became clear that creating representative test files manually was slow, repetitive and difficult to automate.
 
-The package is designed for developers, data engineers, QA teams and researchers who need representative Excel files to test software.
+`xlsynth` provides a declarative way to generate realistic Excel workbooks that can be used to develop, test and benchmark software that reads or processes `.xlsx` files.
 
 ---
 
 ## Why?
 
-Most software is tested using clean, perfectly structured spreadsheets.
+Most software that processes Excel files is tested using clean, perfectly structured spreadsheets.
 
-Real Excel files are rarely like that.
+Real-world workbooks are rarely like that.
 
 They often contain:
 
-* hidden worksheets
-* merged cells
-* blank rows
-* inconsistent date formats
-* duplicated headers
-* mixed data types
-* formulas
-* comments
-* hyperlinks
-* protected sheets
-* inconsistent styling
+- blank rows
+- hidden worksheets
+- merged cells
+- inconsistent date formats
+- duplicated values
+- mixed data types
+- missing values
+- inconsistent formatting
 
-Testing against ideal files gives a false sense of robustness.
+Testing only against ideal workbooks gives a false sense of robustness.
 
-`xlsynth` allows you to generate reproducible workbooks that better represent real-world conditions.
+`xlsynth` helps developers generate reproducible workbooks that better represent the spreadsheets encountered in production.
 
 ---
 
-## MVP Goals
+# Features
 
-The first release focuses on four core capabilities.
+- Declarative workbook schema
+- Synthetic but realistic datasets
+- Multi-sheet workbook generation
+- Reproducible output using random seeds
+- Optional workbook mutations for testing edge cases
+- Designed for automated testing and CI pipelines
 
-### 1. Schema Generator
+---
 
-Describe the workbook instead of manually building it.
+# MVP
+
+The first release focuses on three core capabilities.
+
+## 1. Workbook Schema
+
+Describe a workbook instead of manually creating it.
 
 ```r
 schema <- workbook_schema(
-  sheets = list(
-    sheet(
-      name = "Sales",
-      rows = 5000,
-      columns = list(
-        date(),
-        customer(),
-        product(),
-        currency()
-      )
+
+    sheets = list(
+
+        sheet(
+
+            name = "Sales",
+
+            rows = 5000,
+
+            columns = list(
+
+                date(),
+
+                customer(),
+
+                product(),
+
+                currency()
+
+            )
+
+        )
+
     )
-  )
+
 )
 ```
 
 ---
 
-### 2. Workbook Generator
+## 2. Workbook Generation
 
-Generate a complete Excel workbook from a schema.
+Generate a complete Excel workbook from the schema.
 
 ```r
 generate_excel(
+
     schema,
+
     output = "sales.xlsx"
+
 )
 ```
 
 ---
 
-### 3. Chaos Engine
+## 3. Workbook Mutations
 
 Introduce controlled imperfections into an existing workbook.
 
 ```r
-chaos_excel(
+mutate_workbook(
+
     "sales.xlsx",
-    level = 2,
-    seed = 123
+
+    actions = c(
+
+        "blank_rows",
+
+        "mixed_dates",
+
+        "missing_values"
+
+    ),
+
+    seed = 42
+
 )
 ```
 
-Examples include:
+Available mutations include:
 
-* random blank rows
-* mixed date formats
-* renamed worksheets
-* hidden worksheets
-* duplicated rows
-* inconsistent number formats
-* merged cells
-* missing values
-
----
-
-### 4. Test Suite Generator
-
-Generate an entire collection of workbooks covering common scenarios.
-
-```r
-generate_excel_test_suite(
-    output_dir = "tests/"
-)
-```
-
-Example output:
-
-```
-tests/
-
-minimal.xlsx
-
-protected.xlsx
-
-hidden_sheet.xlsx
-
-merged_cells.xlsx
-
-unicode.xlsx
-
-mixed_dates.xlsx
-
-comments.xlsx
-
-hyperlinks.xlsx
-
-large.xlsx
-
-stress.xlsx
-```
-
----
-
-# Design Principles
-
-* Reproducible
-* Declarative
-* Modular
-* Extensible
-* Realistic
-* Domain agnostic
+- blank rows
+- duplicated rows
+- missing values
+- mixed date formats
+- merged cells
+- hidden worksheets
+- renamed worksheets
+- inconsistent number formats
 
 ---
 
@@ -186,95 +173,81 @@ schema <- workbook_schema(
 )
 
 generate_excel(
+
     schema,
+
     output = "employees.xlsx"
+
 )
 ```
 
 ---
 
-# Example with Chaos
+# Relationship with xlversion
 
-```r
-chaos_excel(
+`xlsynth` and **xlversion** are complementary.
 
-    "employees.xlsx",
+- **xlsynth** generates realistic Excel workbooks for testing.
+- **xlversion** analyses, fingerprints and compares those workbooks.
 
-    actions = c(
-
-        "blank_rows",
-
-        "mixed_dates",
-
-        "rename_sheet"
-
-    ),
-
-    seed = 42
-
-)
-```
+Together they provide a reproducible workflow for developing and testing software that processes Excel files.
 
 ---
 
 # Target Users
 
-* R package developers
-* Data engineers
-* QA engineers
-* ETL developers
-* Business Intelligence teams
-* Researchers
-* Software developers working with Excel
+- Data engineers
+- ETL developers
+- QA engineers
+- Software developers
+- R package developers
+- Anyone building software that reads Excel workbooks
+
+---
+
+# Design Principles
+
+- Reproducible
+- Declarative
+- Modular
+- Extensible
 
 ---
 
 # Roadmap
 
-## MVP
+## v0.1
 
-* Workbook schema
-* Synthetic data generation
-* Excel workbook generation
-* Chaos Engine
-* Test suite generator
+- Workbook schema
+- Workbook generation
+- Basic synthetic data generators
+- Workbook mutations
 
-## v0.2
+## Future
 
-* Industry templates
-* Dashboard generation
-* Conditional formatting
-* Named ranges
-* Charts
-* Images
+Potential future extensions include:
 
-## v0.3
-
-* SAP export simulation
-* ERP exports
-* Google Sheets profiles
-* LibreOffice profiles
-
-## v0.4
-
-* Workbook fuzzing
-* Property-based workbook generation
-* Performance benchmarking
-* Extreme Excel limit testing
+- Industry-specific templates
+- Additional mutation strategies
+- Large workbook generation
+- Performance benchmarking
+- Workbook fuzz testing
 
 ---
 
 # Motivation
 
-`xlsynth` exists because testing software with perfect spreadsheets is easy.
+`xlsynth` started as an internal tool while developing **xlversion**.
 
-Testing it with spreadsheets that resemble those created by real people is much harder.
+Creating realistic Excel files by hand quickly became one of the biggest bottlenecks when writing automated tests.
 
-This package aims to close that gap.
+Rather than maintaining dozens of manually crafted spreadsheets, `xlsynth` generates reproducible workbooks on demand, making automated testing simpler and more representative of real-world scenarios.
 
 ---
 
 # Status
 
 🚧 Early development (MVP)
+
+Contributions, suggestions and feedback are welcome.
 
